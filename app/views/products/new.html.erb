@@ -1,0 +1,43 @@
+<h1>Product#new</h1><br>
+<% if flash.notice %>
+  <div class="alert alert-success"><P><%= flash.notice %></p></div>
+<% end %>
+<form action="<%= products_path %>" method="post" id="myForm" >
+<%= form_for Product.new, url: products_path, id: "myForm" do |f| %>
+	<label for="name">Product Name:</label>
+  <input type="text" name="name" id="name" class="form-control">
+  <label for description> Description</label>
+  <input type="text" name="description" id="description" class="form-control" /><br>
+  <br>
+  <input type="input" name="files_list" id='fileslist'>
+  <div id="mydropzone" class="dropzone"></div> <br>
+  <div id="msgBoard"></div>
+  <input type='submit' value="Create your product">
+<% end %>
+<script>
+  var AUTH_TOKEN = $('meta[name="csrf-token"]').attr('content');
+  Dropzone.autoDiscover = false;
+  var myDropzone = new Dropzone("div#mydropzone",{
+    url: "<%= request.base_url %>/uploadfiles",
+    autoProcessQueue: false,
+    uploadMultiple: true,
+    addRemoveLinks: true,
+    parallelUploads: 10,
+    params:{
+      'authenticity_token':  AUTH_TOKEN
+    },
+    successmultiple: function(data,response){
+      $('#msgBoard').append(response.message).addClass("alert alert-success");
+      $('#msgBoard').delay(2000).fadeOut();
+      $('#fileslist').val(response.files_list);
+      console.log(response.files_list)
+      $('#myForm').off("submit").submit();
+    }
+  });
+  $('#myForm').submit(function(e){
+    if(myDropzone.getQueuedFiles().length > 0){
+      e.preventDefault();
+      myDropzone.processQueue();
+    }
+  });
+</script>
